@@ -1,5 +1,7 @@
+import re
 import os
 import random
+import pickle
 
 class DataReader:
 
@@ -23,6 +25,21 @@ class DataReader:
     train_indices = set(range(len(self.data))) - valid_indices
     train = [self.data[i] for i in train_indices]
     valid = [self.data[i] for i in valid_indices]
+
+    if not os.path.exists("data_ind_split"):
+      os.makedirs("data_ind_split")
+    validpath = os.path.join("data_ind_split", f"simple_valid_portion_{portion}_seed_{seed}.pickle")
+    with open(validpath, "wb") as fout:
+      pickle.dump(valid_indices, fout)
+
+    return {"train": train, "valid": valid}
+
+  def split_train_valid_by_valid_ind(self, valid_ind_path):
+    with open(valid_ind_path, "rb") as fin:
+      valid_indices = pickle.load(fin)
+    train_indices = set(range(len(self.data))) - valid_indices
+    train = [self.data[i] for i in train_indices]
+    valid = [self.data[i] for i in valid_indices]
     return {"train": train, "valid": valid}
 
   def k_fold(self, k=10, order="fixed", seed=None):
@@ -38,6 +55,13 @@ class DataReader:
       random.shuffle(all_indices)
     folds = [all_indices[i::k] for i in range(k)]
     all_indices = set(all_indices)
+
+    if not os.path.exists("data_ind_split"):
+      os.makedirs("data_ind_split")
+    foldpath = os.path.join("data_ind_split", f"fold_k_{k}_order_{order}_seed_{seed}.pickle")
+    with open(foldpath, "wb") as fout:
+      pickle.dump(folds, fout)
+
     for i in range(k):
       valid_indices = set(folds[i])
       train_indices = all_indices - valid_indices
@@ -45,6 +69,17 @@ class DataReader:
       valid = [self.data[i] for i in valid_indices]
       yield {"train": train, "valid": valid}
 
+  def k_fold_by_fold_ind(self, fold_ind_path):
+    with open(fold_ind_path, "rb") as fin:
+      folds = pickle.load(fin)
+    all_indices = set(range(len(self.data)))
+    k = int(re.findall(r"k_(\d+)_order", "fold_k_10_order_{order}_seed_{seed}.pickle")[0])
+    for i in range(k):
+      valid_indices = set(folds[i])
+      train_indices = all_indices - valid_indices
+      train = [self.data[i] for i in train_indices]
+      valid = [self.data[i] for i in valid_indices]
+      yield {"train": train, "valid": valid}
 
 # === usage ===
 if __name__ == "__main__":
