@@ -137,9 +137,12 @@ class MEMMProb:
         #print(pred, item[1], end="; ")
         last_bio = item[1]
       #print(f"=== {i:>4d}: {correct/total} === \n")
+    p = p_correct/p_total
+    r = r_correct/r_total
     return {
-      "p"  : p_correct/p_total,
-      "r"  : r_correct/r_total,
+      "p"  : p,
+      "r"  : r,
+      "f"  : 2*p*r/(p+r)
       "acc": correct/total,
     }
 

@@ -6,11 +6,17 @@ import time
 import datetime
 import json
 
+import os
+
 memm = memm_prob.MEMMProb(None)
 reader = data_reader.DataReader()
 reader.read_file()
 
-result = {}
+if os.path.exist("memm_performance.json"):
+  with open("memm_performance.json", "r") as fin:
+    result = json.load(fin)
+else:
+  result = {}
 
 for i in range(10):
   t0 = time.time()
