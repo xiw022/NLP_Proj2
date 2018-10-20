@@ -142,7 +142,7 @@ class MEMMProb:
     return {
       "p"  : p,
       "r"  : r,
-      "f"  : 2*p*r/(p+r)
+      "f"  : 2*p*r/(p+r),
       "acc": correct/total,
     }
 
