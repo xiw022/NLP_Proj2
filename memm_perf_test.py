@@ -12,7 +12,7 @@ memm = memm_prob.MEMMProb(None)
 reader = data_reader.DataReader()
 reader.read_file()
 
-if os.path.exist("memm_performance.json"):
+if os.path.isfile("memm_performance.json"):
   with open("memm_performance.json", "r") as fin:
     result = json.load(fin)
 else:
