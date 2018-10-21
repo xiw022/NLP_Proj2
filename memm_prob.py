@@ -6,7 +6,6 @@ import pickle
 import datetime
 import os
 
-import memm_util
 
 
 class MEMMProb:
@@ -104,11 +103,11 @@ class MEMMProb:
     if not os.path.exists("nltk_maxent"):
       os.makedirs("nltk_maxent")
     filepath = os.path.join("nltk_maxent",
-                            f"nltk_maxent_max_iter_{max_iter}_{timestamp} \
-                               {'_longer' if longer else ''} \
-                               {'_pos' if pos else ''} \
-                               {'_length' if length else ''} \
-                               {'_capital' if capital else ''}.pickle")
+                            f"nltk_maxent_max_iter_{max_iter}_{timestamp}"
+                            f"{'_longer' if longer else ''}"
+                            f"{'_pos' if pos else ''}"
+                            f"{'_length' if length else ''}"
+                            f"{'_capital' if capital else ''}.pickle")
     with open(filepath, "wb") as fout:
       pickle.dump(self.maxent, fout)
     '''

@@ -8,6 +8,7 @@ class DataReader:
   def __init__(self):
     self.filepath = "train.txt"
     self.data = None
+    self.portion = None
 
   def read_file(self, path="train.txt", encoding='utf-8'):
     if path is None:
@@ -20,7 +21,8 @@ class DataReader:
 
   def split_train_valid(self, portion=0.1, seed=None):
     random.seed(seed)
-    valid_indices = random.sample(range(len(self.data)), int(portion*len(self.data)))
+    self.portion = portion
+    valid_indices = random.sample(range(len(self.data)), int(self.portion*len(self.data)))
     valid_indices = set(valid_indices)
     train_indices = set(range(len(self.data))) - valid_indices
     train = [self.data[i] for i in train_indices]
