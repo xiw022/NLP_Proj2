@@ -19,7 +19,10 @@ class MEMMProb:
     self.w2v_len = w2v_len
     self.maxent = None
 
-  def gen_feature(self, tok, bio_i_1):
+  def gen_feature(self, tok_i, bio_i_1,
+                  longer=False, tok_i_1=None,
+                  pos=False, pos_i=None, pos_i_1=None,
+                  length=False, capital=False):
     '''
     #try:
       curr_tok = self.w2v.get_vector(tok) \
@@ -40,14 +43,37 @@ class MEMMProb:
     #  print(f"tok: \"{tok}\", bio_i_1: \"{bio_i_1}\"")
     #  exit(-1)
     '''
-    return {
-      "curr_tok": tok,
-      "prev_bio": bio_i_1,
-    }
+
+    data = {
+        "curr_tok": tok_i,
+        "prev_bio": bio_i_1,
+      }
+    if pos:
+      data["curr_pos"] = pos_i
+    if length:
+      data["curr_tok_len"] = len(tok_i)
+    if capital:
+      data["curr_tok_cap"] = sum(1 for c in tok_i if c.isupper())
+
+    if longer:
+      data["prev_tok"] = tok_i_1
+      if pos:
+        data["prev_pos"] = pos_i_1
+      if length:
+        data["prev_tok_len"] = len(tok_i_1)
+      if capital:
+        data["prev_tok_cap"] = sum(1 for c in tok_i_1 if c.isupper())
+#      if length:
+#        data["curr_tok_len"] = len(data["curr_tok"])
+    ## NOT FINISHED YET !!!
+
+    return data
 
   def train(self, training_set=None,
             alg="GIS", trace=0, max_iter=10,
-            timestamp=int(datetime.datetime.now().strftime('%m%d%H%M%S'))):
+            timestamp=int(datetime.datetime.now().strftime('%m%d%H%M%S')),
+            longer=False, pos=False,
+            length=False, capital=False):
     assert training_set is not None, "training set is not defined!"
     self.training_set = training_set
     train_features = []
@@ -55,14 +81,21 @@ class MEMMProb:
       #if i % 100 == 0:
       #  print(i)
       toks, poss, bios = sample
-      last_bio = "O"
-      for item in zip(toks.split(), bios.split()):
-        # item[0] is tok, item[1] is bio
+      prev_bio = "O"
+      prev_tok = ""
+      prev_pos = ""
+      for item in zip(toks.split(), bios.split(), poss.split()):
+        # item[0] is tok, item[1] is bio, item[2] is pos
         train_features.append(
           #(feature, tag)
-          (self.gen_feature(item[0], last_bio), item[1])
+          (self.gen_feature(item[0], prev_bio,
+                            longer=longer, tok_i_1=prev_tok,
+                            pos=pos, pos_i=item[2], pos_i_1=prev_pos,
+                            length=length, capital=capital), item[1])
         )
-        last_bio = item[1]
+        prev_pos = item[2]
+        prev_bio = item[1]
+        prev_tok = item[0]
 
     print("start to train MaxentClassifier")
     self.maxent = MaxentClassifier.train(train_features, algorithm=alg, trace=trace, max_iter=max_iter)
@@ -70,8 +103,9 @@ class MEMMProb:
 
     if not os.path.exists("nltk_maxent"):
       os.makedirs("nltk_maxent")
-    filepath = os.path.join("nltk_maxent", f"nltk_maxent_max_iter_{max_iter}_{timestamp}.pickle")
-    with open(filepath, "wb") as fout:
+    filepath = os.path.join("nltk_maxent",
+                            f"nltk_maxent_max_iter_{max_iter}_{timestamp}"
+x    with open(filepath, "wb") as fout:
       pickle.dump(self.maxent, fout)
     '''
     import pickle
@@ -160,6 +194,6 @@ if __name__ == "__main__":
   print(f"=== time used {time.time() - t0}")
   print("=== training maxent ===")
   memm = MEMMProb(None)
-  memm.train(train, max_iter=10)
+  memm.train(train, max_iter=10, length=True, capital=True)
   print(f"=== time used {time.time() - t0}")
   print("done")
