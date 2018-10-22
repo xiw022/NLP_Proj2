@@ -132,7 +132,7 @@ class HMMProb:
         if pred == item[1]:
           correct += 1
         total += 1
-        #print(pred, item[1], end="; ")
+        print(pred, item[1], end="; ")
         last_bio = item[1]
       #print(f"=== {i:>4d}: {correct/total} === \n")
     p = p_correct/p_total
