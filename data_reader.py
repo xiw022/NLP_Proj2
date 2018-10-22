@@ -10,7 +10,7 @@ class DataReader:
     self.data = None
     self.portion = None
 
-  def read_file(self, path="tmp.txt", encoding='utf-8'):
+  def read_file(self, path="train.txt", encoding='utf-8'):
     if path is None:
       path = self.filepath
     if path is None or not os.path.exists(path):

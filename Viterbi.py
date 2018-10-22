@@ -30,20 +30,21 @@ class Viterbi:
         self.word = []
         self.tag = []
         self.res = []
-        if isHMM == True:
-            self.isHMM = True
-            self.hmm = hmm
-            for i, sample in enumerate(train_set):
+        for i, sample in enumerate(train_set):
               toks, poss, bios = sample
               for item in zip(toks.split(), bios.split(), poss.split()):
                   self.word.append(item[0])
                   self.tag.append(item[1])
+        if isHMM == True:
+            self.isHMM = True
+            self.hmm = hmm
+            
             #self.word = list(self.hmm.tag2tok.values())
             #self.tag = list(self.hmm.tag2tok.keys())
-            print(self.word[0])
-            print(self.tag[0])
-            print(len(self.word))
-            print(len(self.tag))
+            #print(self.word[0])
+            #print(self.tag[0])
+            #print(len(self.word))
+            #print(len(self.tag))
             #print(str(self.hmm.tag2tok))
         else:
             self.isHMM = False
@@ -51,7 +52,9 @@ class Viterbi:
         
         self.word_size = len(self.word)
         self.tag_size = len(self.tag)
+        print("here")
         self.score = [[0 for y in range(self.word_size)] for x in range(self.tag_size)]
+        print("out")
         self.bptr = [[0 for y in range(self.word_size)] for x in range(self.tag_size)]
     
     def viterbi_alg(self):
@@ -61,16 +64,17 @@ class Viterbi:
             #score[i][0] = p(ti|)*p(wi|ti)
             self.score[i][0] = prob.calc_prob(self.word[i], self.tag[i], self.tag[i - 1])
             self.bptr[i][0] = 0
-        
+    
         #iteration
         for t in range(1, self.word_size):
             for i in range(0, self.tag_size):
+                
                 local_max = 0
                 curr = -1
                 for j in range(0, self.tag_size):
                     #prob[tag[i]] = p(ti|tj)*p(wi|ti)
-                    if(self.score[j][t - 1] * prob.calc_prob(self.word[t], self.tag[i], self.tag[i - 1]) >= local_max):
-                        local_max = self.score[j][t - 1] * prob.calc_prob(self.word[t], self.tag[i], self.tag[i - 1])
+                    if(self.score[j][t - 1] * prob.calc_prob(self.word[t], self.tag[i], self.tag[j]) >= local_max):
+                        local_max = self.score[j][t - 1] * prob.calc_prob(self.word[t], self.tag[i], self.tag[j])
                         curr = j
                 self.score[i][t] = local_max
                 self.bptr[i][t] = curr
@@ -151,9 +155,9 @@ if __name__ == "__main__":
   timestamp = "1021122311"
   reader = data_reader.DataReader()
   reader.read_file()
-  train = reader.split_train_valid_by_valid_ind(valid_ind_path)
-  #train = ret["train"]
-  #valid = ret["valid"]
+  ret = reader.split_train_valid_by_valid_ind(valid_ind_path)
+  train = ret["train"]
+  valid = ret["valid"]
   memm = ""
   hmm = hmm_prob.HMMProb()
   hmm.train(train)
