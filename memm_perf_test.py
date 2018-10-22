@@ -8,98 +8,104 @@ import json
 
 import os
 
-def test():
+memm = memm_prob.MEMMProb(None)
+reader = data_reader.DataReader()
+reader.read_file()
 
-  memm = memm_prob.MEMMProb(None)
-  reader = data_reader.DataReader()
-  reader.read_file()
+WRITE_FILE = True
+DEBUG = False
 
-  WRITE_FILE = True
+max_iter = 10 if not DEBUG else 1
 
-  if os.path.isfile("memm_performance_result/memm_performance_all.json"):
-    with open("memm_performance_result/memm_performance_all.json", "r") as fin:
-      result = json.load(fin)
+rep = 1
+
+if os.path.isfile("memm_performance_result/memm_performance_all.json"):
+  with open("memm_performance_result/memm_performance_all.json", "r") as fin:
+    result = json.load(fin)
+else:
+  result = {}
+
+def test(rep=10, longer=False, length=False, pos=False, capital=False):
+  global result
+  filename = f"memm_performance_local" \
+             f"{'_longer' if longer else ''}" \
+             f"{'_pos' if pos else ''}" \
+             f"{'_length' if length else ''}" \
+             f"{'_capital' if capital else ''}.json"
+  filename = os.path.join("memm_performance_result", filename)
+  if os.path.isfile(filename):
+    with open(filename, "r") as fin:
+      result_local = json.load(fin)
   else:
-    result = {}
+    result_local = {}
 
-  def test(rep=10, longer=False, length=False, pos=False, capital=False):
-    global result
-    filename = f"memm_performance_local" \
-               f"{'_longer' if longer else ''}" \
-               f"{'_pos' if pos else ''}" \
-               f"{'_length' if length else ''}" \
-               f"{'_capital' if capital else ''}.json"
-    filename = os.path.join("memm_performance_result", filename)
-    if os.path.isfile(filename):
-      with open(filename, "r") as fin:
-        result_local = json.load(fin)
-    else:
-      result_local = {}
+  for i in range(rep):
+    t0 = time.time()
+    timestamp = int(datetime.datetime.now().strftime('%m%d%H%M%S'))
+    print(f"{i}, timestamp={timestamp}", end="; ")
+    ret = reader.split_train_valid(seed=timestamp)
+    train = ret["train"]
+    if DEBUG:
+      train = train[:2]
+    memm.train(training_set=train, max_iter=max_iter, longer=longer, length=length, pos=pos, capital=capital)
+    valid = ret["valid"]
+    perf = memm.valid_performance(valid,
+                                  longer=longer, pos=pos,
+                                  length=length, capital=capital)
 
-    for i in range(rep):
-      t0 = time.time()
-      timestamp = int(datetime.datetime.now().strftime('%m%d%H%M%S'))
-      print(f"{i}, timestamp={timestamp}", end="; ")
-      ret = reader.split_train_valid(seed=timestamp)
-      train = ret["train"]
-      memm.train(train, max_iter=10, longer=True)
-      valid = ret["valid"]
-      perf = memm.valid_performance(valid)
+    result[timestamp] = perf
+    result[timestamp]["features"] = []
+    if longer:
+      result[timestamp]["features"].append("longer")
+    if length:
+      result[timestamp]["features"].append("length")
+    if pos:
+      result[timestamp]["features"].append("pos")
+    if capital:
+      result[timestamp]["features"].append("capital")
 
-      result[timestamp] = perf
-      result[timestamp]["features"] = []
-      if longer:
-        result[timestamp]["features"].append("longer")
-      if length:
-        result[timestamp]["features"].append("length")
-      if pos:
-        result[timestamp]["features"].append("pos")
-      if capital:
-        result[timestamp]["features"].append("capital")
+    result_local[timestamp] = perf
+    print(f"perf={perf}, time for this loop={time.time() - t0}")
+    if WRITE_FILE:
+      with open(filename, "w") as fout:
+        json.dump(result_local, fout)
 
-      result_local[timestamp] = perf
-      print(f"perf={perf}, time for this loop={time.time() - t0}")
-      if WRITE_FILE:
-        with open(filename, "w") as fout:
-          json.dump(result_local, fout)
-
-
-  WRITE_FILE = False
-
+def main_test():
+  global rep
   # === tok_i, tag_i_1 ===
-  print("=== tok_i, tag_i_1 ===")
-  test(rep=10)
+  #print("=== tok_i, tag_i_1 ===")
+  #test(rep=rep)
 
   # === tok_i, tag_i_1, tok_i_1 (longer=True) ===
   print("=== tok_i, tag_i_1, tok_i_1 (longer=True) ===")
-  test(rep=10, longer=True)
+  test(rep=rep, longer=True)
 
   # === tok_i, tag_i_1, length=True ===
   print("=== tok_i, tag_i_1, length=True ===")
-  test(rep=10, length=True)
+  test(rep=rep, length=True)
 
   # === tok_i, tag_i_1, capital=True ===
   print("=== tok_i, tag_i_1, capital=True ===")
-  test(rep=10, capital=True)
+  test(rep=rep, capital=True)
 
   # === tok_i, tag_i_1, pos_i, (pos=True) ===
   print("=== tok_i, tag_i_1, pos_i, (pos=True) ===")
-  test(rep=10, pos=True)
+  test(rep=rep, pos=True)
 
-  # # === tok_i, tag_i_1, tok_i_1, length=True ===
-  # print("=== tok_i, tag_i_1, length=True ===")
-  # test(rep=10, longer=True, length=True)
+  # === tok_i, tag_i_1, tok_i_1, length=True ===
+  print("=== tok_i, tag_i_1, tok_i_1, length=True ===")
+  test(rep=rep, longer=True, length=True)
 
-  # # === tok_i, tag_i_1, tok_i_1, capital=True ===
-  # print("=== tok_i, tag_i_1, capital=True ===")
-  # test(rep=10, longer=True, capital=True)
+  # === tok_i, tag_i_1, tok_i_1, capital=True ===
+  print("=== tok_i, tag_i_1, tok_i_1, capital=True ===")
+  test(rep=rep, longer=True, capital=True)
 
-  # # === tok_i, tag_i_1, pos_i, tok_i_1, pos_i_1 (pos=True) ===
-  # print("=== tok_i, tag_i_1, pos_i, (pos=True) ===")
-  # test(rep=10 , longer=True, pos=True)
+  # === tok_i, tag_i_1, pos_i, tok_i_1, pos_i_1 (pos=True) ===
+  print("=== tok_i, tag_i_1, pos_i, tok_i_1, pos_i_1 (pos=True) ===")
+  test(rep=rep, longer=True, pos=True)
 
   if WRITE_FILE:
-    with open("memm_performance_all.json", "w") as fout:
+    with open("memm_performance_result/memm_performance_all.json", "w") as fout:
       json.dump(result, fout)
 
 
@@ -155,7 +161,7 @@ def print_raw_data_file():
 
 
 if __name__ == "__main__":
-  # test()
-  # report()
-  # print_report_file()
+  main_test()
+  report()
+  print_report_file()
   print_raw_data_file()

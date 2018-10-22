@@ -110,6 +110,7 @@ class MEMMProb:
                             f"{'_capital' if capital else ''}.pickle")
     with open(filepath, "wb") as fout:
       pickle.dump(self.maxent, fout)
+      print("dump model to file:", filepath)
     '''
     import pickle
     f = open('my_classifier.pickle', 'rb')
@@ -121,18 +122,44 @@ class MEMMProb:
     with open(model_path, "rb") as fin:
       self.maxent = pickle.load(fin)
 
-  def calc_prob(self, tok, bio_i, bio_i_1):
-    pdist = self.maxent.prob_classify(self.gen_feature(tok, bio_i_1))
+  def calc_prob(self, tok_i, bio_i, bio_i_1,
+                  longer=False, tok_i_1=None,
+                  pos=False, pos_i=None, pos_i_1=None,
+                  length=False, capital=False):
+
+    pdist = self.maxent.prob_classify(
+      self.gen_feature(tok_i=tok_i, bio_i_1=bio_i_1,
+                      longer=longer, tok_i_1=tok_i_1,
+                      pos=pos, pos_i=pos_i, pos_i_1=pos_i_1,
+                      length=length, capital=capital)
+    )
+
     return pdist.prob(bio_i)
 
-  def calc_probs(self, tok, bio_i_1):
-    pdist = self.maxent.prob_classify(self.gen_feature(tok, bio_i_1))
+  def calc_probs(self, tok_i, bio_i_1,
+                  longer=False, tok_i_1=None,
+                  pos=False, pos_i=None, pos_i_1=None,
+                  length=False, capital=False):
+
+    pdist = self.maxent.prob_classify(
+      self.gen_feature(tok_i=tok_i, bio_i_1=bio_i_1,
+                  longer=longer, tok_i_1=tok_i_1,
+                  pos=pos, pos_i=pos_i, pos_i_1=pos_i_1,
+                  length=length, capital=capital)
+    )
+
     return {
       tag : pdist.prob(tag) for tag in pdist.samples()
     }
 
-  def predict(self, tok, bio_i_1):
-    probs = self.calc_probs(tok, bio_i_1)
+  def predict(self, tok_i, bio_i_1,
+              longer=False, tok_i_1=None,
+              pos=False, pos_i=None, pos_i_1=None,
+              length=False, capital=False):
+    probs = self.calc_probs(tok_i=tok_i, bio_i_1=bio_i_1,
+                            longer=longer, tok_i_1=tok_i_1,
+                            pos=pos, pos_i=pos_i, pos_i_1=pos_i_1,
+                            length=length, capital=capital)
     tag = ""
     prob = 0
     for k, v in probs.items():
@@ -141,7 +168,14 @@ class MEMMProb:
         tag = k
     return tag
 
-  def valid_performance(self, validation_set):
+  def valid_performance(self, validation_set,
+                        longer=False, pos=False,
+                        length=False, capital=False):
+    print("performance upon validation with"
+          f"{' longer' if longer else ''}"
+          f"{' pos' if pos else ''}"
+          f"{' length' if length else ''}"
+          f"{' capital' if capital else ''}.pickle")
     total = 0
     correct = 0
     p_total = 0
@@ -153,10 +187,15 @@ class MEMMProb:
       #  print(i)
       toks, poss, bios = sample
       last_bio = "O"
+      last_tok = ""
+      last_pos = ""
       #print(toks)
-      for item in zip(toks.split(), bios.split()):
-        # item[0] is tok, item[1] is bio
-        pred = self.predict(item[0], last_bio)
+      for item in zip(toks.split(), bios.split(), poss.split()):
+        # item[0] is tok, item[1] is bio, item[2] is pos
+        pred = self.predict(item[0], last_bio,
+                            longer=longer, tok_i_1=last_tok,
+                            pos=pos, pos_i=item[2], pos_i_1=last_pos,
+                            length=length, capital=capital)
         # p
         if pred != "O":
           p_total += 1
@@ -173,6 +212,8 @@ class MEMMProb:
         total += 1
         #print(pred, item[1], end="; ")
         last_bio = item[1]
+        last_tok = item[0]
+        last_pos = item[2]
       #print(f"=== {i:>4d}: {correct/total} === \n")
     p = p_correct/p_total
     r = r_correct/r_total
