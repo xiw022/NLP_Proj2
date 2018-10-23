@@ -1,3 +1,5 @@
 # NLP_Proj2
 
-##Runable files:
+### Runnable files:
+1. main
+2. analogy test code done, did not run yet
