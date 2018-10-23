@@ -72,37 +72,41 @@ def test(rep=10, longer=False, length=False, pos=False, capital=False):
 
 def main_test():
   global rep
-  # === tok_i, tag_i_1 ===
-  #print("=== tok_i, tag_i_1 ===")
-  #test(rep=rep)
+  # # === tok_i, tag_i_1 ===
+  # print("=== tok_i, tag_i_1 ===")
+  # test(rep=rep)
+  #
+  # # === tok_i, tag_i_1, tok_i_1 (longer=True) ===
+  # print("=== tok_i, tag_i_1, tok_i_1 (longer=True) ===")
+  # test(rep=rep, longer=True)
+  #
+  # # === tok_i, tag_i_1, length=True ===
+  # print("=== tok_i, tag_i_1, length=True ===")
+  # test(rep=rep, length=True)
+  #
+  # # === tok_i, tag_i_1, capital=True ===
+  # print("=== tok_i, tag_i_1, capital=True ===")
+  # test(rep=rep, capital=True)
+  #
+  # # === tok_i, tag_i_1, pos_i, (pos=True) ===
+  # print("=== tok_i, tag_i_1, pos_i, (pos=True) ===")
+  # test(rep=rep, pos=True)
+  #
+  # # === tok_i, tag_i_1, tok_i_1, length=True ===
+  # print("=== tok_i, tag_i_1, tok_i_1, length=True ===")
+  # test(rep=rep, longer=True, length=True)
+  #
+  # # === tok_i, tag_i_1, tok_i_1, capital=True ===
+  # print("=== tok_i, tag_i_1, tok_i_1, capital=True ===")
+  # test(rep=rep, longer=True, capital=True)
+  #
+  # # === tok_i, tag_i_1, pos_i, tok_i_1, pos_i_1 (pos=True) ===
+  # print("=== tok_i, tag_i_1, pos_i, tok_i_1, pos_i_1 (pos=True) ===")
+  # test(rep=rep, longer=True, pos=True)
 
-  # === tok_i, tag_i_1, tok_i_1 (longer=True) ===
-  print("=== tok_i, tag_i_1, tok_i_1 (longer=True) ===")
-  test(rep=rep, longer=True)
-
-  # === tok_i, tag_i_1, length=True ===
-  print("=== tok_i, tag_i_1, length=True ===")
-  test(rep=rep, length=True)
-
-  # === tok_i, tag_i_1, capital=True ===
-  print("=== tok_i, tag_i_1, capital=True ===")
-  test(rep=rep, capital=True)
-
-  # === tok_i, tag_i_1, pos_i, (pos=True) ===
-  print("=== tok_i, tag_i_1, pos_i, (pos=True) ===")
-  test(rep=rep, pos=True)
-
-  # === tok_i, tag_i_1, tok_i_1, length=True ===
-  print("=== tok_i, tag_i_1, tok_i_1, length=True ===")
-  test(rep=rep, longer=True, length=True)
-
-  # === tok_i, tag_i_1, tok_i_1, capital=True ===
+  # === tok_i, tag_i_1, pos_i, tok_i_1, pos_i_1 (pos=True) capital=True ===
   print("=== tok_i, tag_i_1, tok_i_1, capital=True ===")
-  test(rep=rep, longer=True, capital=True)
-
-  # === tok_i, tag_i_1, pos_i, tok_i_1, pos_i_1 (pos=True) ===
-  print("=== tok_i, tag_i_1, pos_i, tok_i_1, pos_i_1 (pos=True) ===")
-  test(rep=rep, longer=True, pos=True)
+  test(rep=rep, longer=True, capital=True, pos=True)
 
   if WRITE_FILE:
     with open("memm_performance_result/memm_performance_all.json", "w") as fout:
@@ -193,8 +197,8 @@ def gen_report_csv():
 
 
 if __name__ == "__main__":
-  #main_test()
-  #report()
+  main_test()
+  report()
   print_report_file()
   #print_raw_data_file()
   #gen_report_csv()

@@ -68,7 +68,7 @@ class HMMProb:
     self.k = model["k"]
     self.unk_mode = model["unk_mode"]
 
-  def calc_prob(self, tok_i, bio_i, bio_i_1, k=None):
+  def calc_prob(self, tok_i, bio_i, bio_i_1, k=None, **kwargs):
     k = self.k if k is None else k
     # trans: P(t_i | t_i-1)
     trans = self.bigram.calculate_prob(prev=bio_i_1, curr=bio_i, k=k)
@@ -76,7 +76,7 @@ class HMMProb:
     emit = self.tag2tok[bio_i].calculate_prob(tok_i, k=k)
     return trans * emit
 
-  def calc_probs(self, tok_i, bio_i_1, k=None):
+  def calc_probs(self, tok_i, bio_i_1, k=None, **kwargs):
     k = self.k if k is None else k
     tags = self.tag2tok.keys()
     return {
